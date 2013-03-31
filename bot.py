@@ -45,7 +45,6 @@ def leftClick():
 
 def mousePos(cord):
     win32api.SetCursorPos((cord[0], cord[1]))
-    pass
 
 def get_cords():
     x,y = win32api.GetCursorPos()
@@ -64,21 +63,29 @@ def check(start, shape):
             return d
 
 def pos(p):
-    lowest = MAX_ROW
+    lowest_row = MAX_ROW
+    lowest_energy = 100
     best_shape = best_col = -1
     for k,s in enumerate(shapes[p]):
         span = len(s)
         for i in range(MAX_COL-span+1):
             base = check(i, s)
-            if (base < lowest):
-                lowest = base
+            if base < lowest_row:
+                lowest_row = base
+                lowest_energy = energy[p][k]
                 best_shape = k
                 best_col = i
-    return (best_shape,best_col,lowest)
+            elif base == lowest_row and energy[p][k] < lowest_energy:
+                lowest_energy = energy[p][k]
+                best_shape = k
+                best_col = i
+            else:
+                pass
+
+    return (best_shape,best_col,lowest_row)
 
 def rowFilled(row):
     return all([c == 1 for c in rows[row]])
-    pass
 
 def printGrid():
     for i in range(MAX_ROW):
@@ -86,6 +93,27 @@ def printGrid():
 
 def printCols():
     print columns
+
+def guideBlock(piece, si, sc):
+    if si == 1:
+        rotateRight()
+    elif si == 2:
+        rotateRight()
+        rotateRight()
+    elif si == 3:
+        rotateLeft()
+    else:
+        pass
+
+    init_col = init[piece][si]
+    moves = abs(sc-init_col)
+    if sc < init_col:
+        move_func = moveLeft
+    else:
+        move_func = moveRight
+    for _ in range(moves):
+        move_func()
+    drop()
 
 def updateGrid(piece, shape_index, start_col, lowest_row):
     global game_over
@@ -141,12 +169,10 @@ def playGame():
     while True:
         if game_over:
             break
+        
+        time.sleep(.3) # required, for keeping the game in sync
+        
         prev_color = color
-        # printGrid()
-        # print
-        # printCols()
-        # save_screenshot()
-        time.sleep(.3)
         if color in colors:
             piece = colors[color]
             tot += 1
@@ -154,41 +180,25 @@ def playGame():
         else:
             print "Unknown color!"
             break
+        
+        # Grab the next block
         im = ImageGrab.grab(box_next_block)
         color = im.getpixel(next_block)
+
+        # HACK - checking for game over
+        # if the next block has not changed for five times straight
+        # the game is already over
         if color == prev_color:
             cnt += 1
             if cnt > 5:
                 game_over = True
         else:
             cnt = 0
+        
         si,sc,lr = pos(piece)
         print si,sc,lr
-        if si == 1:
-            rotateRight()
-        elif si == 2:
-            rotateRight()
-            rotateRight()
-        elif si == 3:
-            rotateLeft()
-        else:
-            pass
-        init_col = init[piece][si]
-        moves = abs(sc-init_col)
-        if sc < init_col:
-            move_func = moveLeft
-        else:
-            move_func = moveRight
-        for _ in range(moves):
-            move_func()
-        drop()
+        guideBlock(piece, si, sc)
         updateGrid(piece,si,sc,lr)
-
-        # if tot % 5 == 0:
-        #     save_screenshot()
-        #     printGrid()
-        #     print
-        #     printCols()
 
 if __name__ == "__main__":
     playGame()
