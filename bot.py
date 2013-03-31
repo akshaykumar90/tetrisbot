@@ -59,24 +59,30 @@ def check(start, shape):
     cols = columns[start:start+ls]
     for i in range(ls):
         d = cols[i] - shape[i]
-        if all([shape[j]+d >= cols[j] for j in range(ls)]):
-            return d
+        feasible = True
+        voids = 0
+        for j in range(ls):
+            empty = shape[j]+d - cols[j]
+            feasible &= empty >= 0
+            voids += empty
+        if feasible:
+            return (d,voids)
 
 def pos(p):
     lowest_row = MAX_ROW
-    lowest_energy = 100
+    least_voids = 100
     best_shape = best_col = -1
     for k,s in enumerate(shapes[p]):
         span = len(s)
         for i in range(MAX_COL-span+1):
-            base = check(i, s)
-            if base < lowest_row:
+            base,voids = check(i, s)
+            if voids < least_voids:
                 lowest_row = base
-                lowest_energy = energy[p][k]
+                least_voids = voids
                 best_shape = k
                 best_col = i
-            elif base == lowest_row and energy[p][k] < lowest_energy:
-                lowest_energy = energy[p][k]
+            elif voids == least_voids and base < lowest_row:
+                lowest_row = base
                 best_shape = k
                 best_col = i
             else:
