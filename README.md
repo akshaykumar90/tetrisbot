@@ -11,4 +11,8 @@ There are intermittent issues with the bot losing sync with the game. This may h
 
 The aim is to try different playing strategies and improve the level, high score and lines completed over time.
 
-Current highest - Level 12 - 113 Lines - Score 63283
+*High Scores*
+
+Level 12 - 113 Lines - Score 63283
+
+Level 12 - 118 Lines - Score 61756
